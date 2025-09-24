@@ -1,0 +1,64 @@
+# -------------------------------
+# Deployment de guestbook-ui
+# -------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guestbook-ui
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: guestbook-ui
+  template:
+    metadata:
+      labels:
+        app: guestbook-ui
+    spec:
+      containers:
+        - image: gcr.io/google-samples/gb-frontend:v5
+          name: guestbook-ui
+          ports:
+            - containerPort: 80
+---
+# -------------------------------
+# Service de guestbook-ui
+# -------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: guestbook-ui
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: guestbook-ui
+---
+# -------------------------------
+# PostSync Hook para ejecutar curl DAST
+# -------------------------------
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: run-dast-scan
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      containers:
+        - name: trigger-dast
+          image: curlimages/curl:latest
+          command:
+            - "sh"
+            - "-c"
+            - >
+              curl -k -X POST "https://dastapi.otlatam.com:6443/api/v2/scans/start-scan-cicd"
+              -H "Authorization: FORTIFYTOKEN ZTBiZDkzNmEtYzBjNC00MTk4LTg5ZDktMmM3YmM2YmI4ZDYx"
+              -H "Content-Type: application/json"
+              -d '{"cicdToken":"144ecc72-3cc4-49d2-b353-a1c5f3dd0c19","name":"PruebasCICD","scannerId":0,"useAssignedScannerOnly":true}'
+      restartPolicy: Never
+  backoffLimit: 0
