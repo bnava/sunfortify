@@ -45,7 +45,7 @@ metadata:
   name: run-dast-scan
   annotations:
     argocd.argoproj.io/hook: PostSync
-    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/hook-delete-policy: HookFailed
 spec:
   template:
     spec:
