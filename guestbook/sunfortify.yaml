@@ -41,7 +41,7 @@ spec:
     spec:
       restartPolicy: Never
 
-      # 🔥 ESTA ES LA PARTE IMPORTANTE
+      # ESTA ES LA PARTE IMPORTANTE
       hostAliases:
         - ip: "192.168.41.185"
           hostnames:
